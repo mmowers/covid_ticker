@@ -14,34 +14,29 @@
 <script>
 var covid_data_url = 'https://raw.githubusercontent.com/nittyjee/coronastate/master/data/overall_summary.csv'
 
+function get_date_str(date_obj){
+	var dd   = date_obj.getDate();
+	var mm   = date_obj.getMonth()+1; //January is 0!
+	var yyyy = date_obj.getFullYear();
+	if(dd<10)  { dd='0'+dd } 
+	if(mm<10)  { mm='0'+mm } 
+	date_str = yyyy + '-' + mm+'-'+dd;
+	return date_str;
+}
 $.ajax({ url: covid_data_url, success: function(data) {
 	var data_arr = Papa.parse(data,{ header: true });
 	data_arr = data_arr['data'];
+
 	var today = new Date();
-	var dd   = today.getDate();
-	var mm   = today.getMonth()+1; //January is 0!
-	var yyyy = today.getFullYear();
-	if(dd<10)  { dd='0'+dd } 
-	if(mm<10)  { mm='0'+mm } 
-	var today_str = yyyy + '-' + mm+'-'+dd;
+	today_str = get_date_str(today);
 
 	var two_days_ago = new Date();
 	two_days_ago.setDate(two_days_ago.getDate() - 2);
-	var dd   = two_days_ago.getDate();
-	var mm   = two_days_ago.getMonth()+1; //January is 0!
-	var yyyy = two_days_ago.getFullYear();
-	if(dd<10)  { dd='0'+dd } 
-	if(mm<10)  { mm='0'+mm } 
-	var two_days_ago_str = yyyy + '-' + mm+'-'+dd;
+	var two_days_ago_str = get_date_str(two_days_ago);
 
 	var one_week_two_days_ago = new Date();
 	one_week_two_days_ago.setDate(one_week_two_days_ago.getDate() - 9);
-	var dd   = one_week_two_days_ago.getDate();
-	var mm   = one_week_two_days_ago.getMonth()+1; //January is 0!
-	var yyyy = one_week_two_days_ago.getFullYear();
-	if(dd<10)  { dd='0'+dd } 
-	if(mm<10)  { mm='0'+mm } 
-	var one_week_two_days_ago_str = yyyy + '-' + mm+'-'+dd;
+	var one_week_two_days_ago_str = get_date_str(one_week_two_days_ago);
 
 	for(var i = data_arr.length - 1; i > 0; i--) {
 		var brk = 5;
