@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 <title>Covid ticker</title>
 <style>
 </style>
@@ -26,6 +25,26 @@ function get_date_str(date_obj){
 	return date_str;
 }
 
+function parseCSV(allText) {
+    var allTextLines = allText.split(/\r\n|\n/);
+    var headers = allTextLines[0].split(',');
+    var lines = [];
+
+    for (var i=1; i<allTextLines.length; i++) {
+        var data = allTextLines[i].split(',');
+        if (data.length == headers.length) {
+
+            var dct = {};
+            for (var j=0; j<headers.length; j++) {
+                dct[headers[j]] = data[j];
+            }
+            lines.push(dct);
+        }
+    }
+	return lines;
+    // alert(lines);
+}
+
 var xhr = new XMLHttpRequest();
 xhr.open('GET', covid_data_url);
 xhr.send(null);
@@ -35,8 +54,7 @@ xhr.onreadystatechange = function () {
 	if (xhr.readyState === DONE) {
 		if (xhr.status === OK) {
 			data = xhr.responseText;
-			var data_arr = Papa.parse(data,{ header: true });
-			data_arr = data_arr['data'];
+			var data_arr = parseCSV(data);
 
 			var today = new Date();
 			today_str = get_date_str(today);
