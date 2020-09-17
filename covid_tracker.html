@@ -1,7 +1,6 @@
 <!DOCTYPE html>
 <html>
 <head>
-<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.3.0/papaparse.min.js"></script>
 <title>Covid ticker</title>
 <style>
@@ -21,58 +20,70 @@ function get_date_str(date_obj){
 	var dd   = date_obj.getDate();
 	var mm   = date_obj.getMonth()+1; //January is 0!
 	var yyyy = date_obj.getFullYear();
-	if(dd<10)  { dd='0'+dd } 
-	if(mm<10)  { mm='0'+mm } 
+	if(dd<10)  { dd='0'+dd }
+	if(mm<10)  { mm='0'+mm }
 	date_str = yyyy + '-' + mm+'-'+dd;
 	return date_str;
 }
-$.ajax({ url: covid_data_url, success: function(data) {
-	var data_arr = Papa.parse(data,{ header: true });
-	data_arr = data_arr['data'];
 
-	var today = new Date();
-	today_str = get_date_str(today);
+var xhr = new XMLHttpRequest();
+xhr.open('GET', covid_data_url);
+xhr.send(null);
+xhr.onreadystatechange = function () {
+	var DONE = 4; // readyState 4 means the request is done.
+	var OK = 200; // status 200 is a successful return.
+	if (xhr.readyState === DONE) {
+		if (xhr.status === OK) {
+			data = xhr.responseText;
+			var data_arr = Papa.parse(data,{ header: true });
+			data_arr = data_arr['data'];
 
-	var two_days_ago = new Date();
-	two_days_ago.setDate(two_days_ago.getDate() - 2);
-	var two_days_ago_str = get_date_str(two_days_ago);
+			var today = new Date();
+			today_str = get_date_str(today);
 
-	var one_week_two_days_ago = new Date();
-	one_week_two_days_ago.setDate(one_week_two_days_ago.getDate() - 9);
-	var one_week_two_days_ago_str = get_date_str(one_week_two_days_ago);
+			var two_days_ago = new Date();
+			two_days_ago.setDate(two_days_ago.getDate() - 2);
+			var two_days_ago_str = get_date_str(two_days_ago);
 
-	for(var i = data_arr.length - 1; i > 0; i--) {
-		var brk = 5;
-		if(data_arr[i].date == today_str){
-			var today_cases = data_arr[i].cases;
-		}
-		if(data_arr[i].date == two_days_ago_str){
-			var two_days_ago_case = data_arr[i].cases;
-		}
-		if(data_arr[i].date == one_week_two_days_ago_str){
-			var one_week_two_days_ago_case = data_arr[i].cases;
-			break;
+			var one_week_two_days_ago = new Date();
+			one_week_two_days_ago.setDate(one_week_two_days_ago.getDate() - 9);
+			var one_week_two_days_ago_str = get_date_str(one_week_two_days_ago);
+
+			for(var i = data_arr.length - 1; i > 0; i--) {
+				var brk = 5;
+				if(data_arr[i].date == today_str){
+					var today_cases = data_arr[i].cases;
+				}
+				if(data_arr[i].date == two_days_ago_str){
+					var two_days_ago_case = data_arr[i].cases;
+				}
+				if(data_arr[i].date == one_week_two_days_ago_str){
+					var one_week_two_days_ago_case = data_arr[i].cases;
+					break;
+				}
+			}
+			var daily_case = (parseInt(two_days_ago_case) - parseInt(one_week_two_days_ago_case))/7;
+
+			var ms_per_case = (1/daily_case)*24*60*60*1000;
+
+			var now = new Date();
+			var midnight = new Date();
+			midnight.setHours(0,0,0,0);
+			var brk = 4;
+
+			document.getElementById('today_num').innerHTML = today_cases;
+			var case_count = Math.round(parseInt(today_cases) + daily_case * (now-midnight)/(1000*60*60*24));
+
+			function tick() {
+				case_count++;
+				document.getElementById('num').innerHTML = case_count.toString();
+			}
+			window.setInterval(tick, ms_per_case);
+		} else {
+			console.log('Error: ' + xhr.status); // An error occurred during the request.
 		}
 	}
-	var daily_case = (parseInt(two_days_ago_case) - parseInt(one_week_two_days_ago_case))/7;
-
-	var ms_per_case = (1/daily_case)*24*60*60*1000;
-
-	var now = new Date();
-	var midnight = new Date();
-	midnight.setHours(0,0,0,0);
-	var brk = 4;
-
-	document.getElementById('today_num').innerHTML = today_cases;
-	var case_count = Math.round(parseInt(today_cases) + daily_case * (now-midnight)/(1000*60*60*24));
-
-	window.setInterval(tick, ms_per_case);
-
-	function tick() {
-		case_count++;
-		document.getElementById('num').innerHTML = case_count.toString();
-	}
-}});
+};
 
 </script>
 </body>
