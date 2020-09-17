@@ -10,6 +10,9 @@
 </script>
 
 <body>
+<h3>Confirmed Cases:</h3>
+<div id='today_num'>Today Num</div>
+<h3>Estimated Cases:</h3>
 <div id='num'>Counter</div>
 <script>
 var covid_data_url = 'https://raw.githubusercontent.com/nittyjee/coronastate/master/data/overall_summary.csv'
@@ -55,14 +58,20 @@ $.ajax({ url: covid_data_url, success: function(data) {
 
 	var ms_per_case = (1/daily_case)*24*60*60*1000;
 
-	var case_count = parseInt(today_cases);
+	var now = new Date();
+	var midnight = new Date();
+	midnight.setHours(0,0,0,0);
+	var brk = 4;
+
+	document.getElementById('today_num').innerHTML = today_cases;
+	var case_count = Math.round(parseInt(today_cases) + daily_case * (now-midnight)/(1000*60*60*24));
 
 	window.setInterval(tick, ms_per_case);
+
 	function tick() {
 		case_count++;
 		document.getElementById('num').innerHTML = case_count.toString();
 	}
-
 }});
 
 </script>
